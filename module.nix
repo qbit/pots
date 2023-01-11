@@ -83,7 +83,7 @@ in {
         Group = cfg.group;
 
         ExecStart =
-          "${cfg.package}/bin/pots -port ${cfg.port}";
+          "${cfg.package}/bin/pots -port ${toString cfg.port}";
         EnvironmentFile = cfg.envFile;
       };
     };
