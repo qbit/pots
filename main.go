@@ -132,7 +132,8 @@ func (apiHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	listen := flag.String("listen", ":8888", "listen string")
+	port := flag.Int("port", 8888, "port to listen on")
+	ip := flag.String("ip", "127.0.0.1", "ip to listen on")
 	flag.Parse()
 
 	mux := http.NewServeMux()
@@ -147,7 +148,7 @@ func main() {
 	})
 
 	s := &http.Server{
-		Addr:    *listen,
+		Addr:    fmt.Sprintf("%s:%d", *ip, *port),
 		Handler: mux,
 	}
 

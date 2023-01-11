@@ -10,12 +10,16 @@
       forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
       nixpkgsFor = forAllSystems (system: import nixpkgs { inherit system; });
     in {
+      overlay = final: prev: {
+        pots = self.packages.${prev.system}.pots;
+      };
+      nixosModule = import ./module.nix;
       packages = forAllSystems (system:
         let pkgs = nixpkgsFor.${system};
         in {
           pots = pkgs.buildGoModule {
             pname = "pots";
-            version = "v0.0.1";
+            version = "v0.0.2";
             src = ./.;
             vendorHash = "sha256-pQpattmS9VmO3ZIQUFn66az8GSmB4IvYhTTCFn6SUmo=";
           };
