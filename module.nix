@@ -73,9 +73,9 @@ in {
     systemd.services.pots = {
       enable = true;
       description = "pots server";
-      wantedBy = [ "network-online.target" ];
       after = [ "network-online.target" ];
-
+      wantedBy = [ "multi-user.target" ];
+      wants = [ "network-online.target" ];
       environment = { HOME = "${cfg.dataDir}"; };
 
       serviceConfig = {
