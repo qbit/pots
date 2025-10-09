@@ -31,33 +31,26 @@ type Data struct {
 
 type TSLogs []LogEntry
 
-// Push represents a message sent to the Pushover api
+// Push represents a message sent to the Gotify api
 type Push struct {
-	Token     string    `json:"token"`
-	User      string    `json:"user"`
-	Message   string    `json:"message"`
-	Device    string    `json:"device,omitempty"`
-	Title     string    `json:"title"`
-	URL       string    `json:"url"`
-	URLTitle  string    `json:"url_title,omitempty"`
-	Priority  int       `json:"priority,omitempty"`
-	Sound     string    `json:"sound,omitempty"`
-	Timestamp time.Time `json:"timestamp"`
+	Message  string `json:"message"`
+	Title    string `json:"title"`
+	Priority int    `json:"priority"`
 }
 
-// PushResponse is a response from the Pushover api
+// PushResponse is a response from the Gotify api
 type PushResponse struct {
-	Status  int      `json:"status,omitempty"`
-	Request string   `json:"request,omitempty"`
-	User    string   `json:"user,omitempty"`
-	Errors  []string `json:"errors,omitempty"`
+	AppID      int       `json:"appid,omitempty"`
+	Date       time.Time `json:"date,omitempty"`
+	Error      string    `json:"error,omitempty"`
+	ErrorCode  int       `json:"errorCode,omitempty"`
+	ErrorDescr string    `json:"errorDescription",omitempty"`
 }
 
 type apiHandler struct{}
 
 var (
 	appToken  = os.Getenv("PUSHOVER_TOKEN")
-	userToken = os.Getenv("PUSHOVER_USER")
 	potsToken = os.Getenv("POTS_TOKEN")
 	client    = *http.DefaultClient
 )
@@ -69,7 +62,7 @@ func sendPush(p *Push) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", "https://api.pushover.net/1/messages.json", buf)
+	req, err := http.NewRequest("POST", "https://notify.otter-alligator.ts.net/message", buf)
 	if err != nil {
 		return err
 	}
@@ -88,8 +81,12 @@ func sendPush(p *Push) error {
 		return err
 	}
 
-	if len(resBody.Errors) > 0 {
-		return fmt.Errorf("%s", strings.Join(resBody.Errors, ", "))
+	if resBody.Error != "" {
+		return fmt.Errorf("%s", strings.Join([]string{
+			fmt.Sprintf("Error Code: %d", resBody.ErrorCode),
+			resBody.Error,
+			resBody.ErrorDescr,
+		}, ", "))
 	}
 
 	return nil
@@ -117,12 +114,8 @@ func (apiHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	for _, t := range tsLogs {
 		var push = &Push{
-			Token:     appToken,
-			User:      userToken,
-			Timestamp: time.Now(),
-			Title:     t.Message,
-			Message:   t.Type,
-			URL:       t.Data.URL,
+			Title:   t.Message,
+			Message: t.Type,
 		}
 		err := sendPush(push)
 		if err != nil {
