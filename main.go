@@ -68,6 +68,7 @@ func sendPush(p *Push) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Gotify-Key", appToken)
 
 	res, err := client.Do(req)
 	if err != nil {
